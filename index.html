@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 微信/社交媒体分享元数据 -->
     <title>2026新年快樂 - Dr. Richard Niu</title>
     <meta name="description" content="Dr. Richard Niu 祝您及家人2026年新年快樂！">
     <meta property="og:title" content="2026新年快樂 - Dr. Richard Niu">
@@ -72,15 +71,14 @@
 
         /* 背景图设置 - 强制填充 */
         #bg-image {
-            position: fixed; /* 使用 fixed 防止移动端滚动问题 */
+            position: fixed; 
             top: 0; 
             left: 0; 
             width: 100vw; 
             height: 100vh;
-            object-fit: cover; /* 关键属性：保持比例填充，裁切多余部分 */
+            object-fit: cover; 
             object-position: center;
-            /* 滤镜：亮度降低以突出金色文字，对比度微调 */
-            filter: brightness(0.7) contrast(1.1) saturate(0.9);
+            filter: brightness(0.6) contrast(1.1) saturate(0.9);
             transition: opacity 2s ease-in-out;
             opacity: 0;
             z-index: 1;
@@ -103,14 +101,14 @@
             text-align: center;
             color: var(--deco-light-gold);
             padding: 20px;
-            /* 遮罩层：让文字更清晰 */
-            background: radial-gradient(circle, rgba(0,51,34,0.1) 0%, rgba(5,5,5,0.5) 100%);
+            background: radial-gradient(circle, rgba(0,51,34,0.1) 0%, rgba(5,5,5,0.6) 100%);
         }
 
         .greeting-text {
             opacity: 0;
             transform: translateY(15px);
-            transition: all 1.2s ease-out 0.3s;
+            /* 调整：减少延迟，打开即显示 (0.3s -> 0.1s) */
+            transition: all 1.2s ease-out 0.1s;
         }
 
         .visible {
@@ -129,6 +127,17 @@
             animation: shimmer 4s linear infinite, textGlow 3s ease-in-out infinite;
             display: inline-block;
         }
+        
+        /* 天际线线条动画 */
+        .skyline-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawLine 3s ease-out forwards 0.5s;
+        }
+        
+        @keyframes drawLine {
+            to { stroke-dashoffset: 0; }
+        }
 
         @keyframes shimmer {
             0% { background-position: 0% center; }
@@ -144,6 +153,35 @@
                 filter: drop-shadow(0 0 20px rgba(212,175,55,0.8));
                 text-shadow: 2px 2px 10px rgba(212,175,55,0.4);
             }
+        }
+
+        /* 上传按钮样式 */
+        #upload-btn-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        #upload-btn-container:hover {
+            opacity: 1;
+        }
+        .art-deco-btn {
+            background: rgba(5, 5, 5, 0.8);
+            border: 1px solid var(--deco-gold);
+            color: var(--deco-gold);
+            padding: 8px 16px;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        .art-deco-btn:hover {
+            background: var(--deco-gold);
+            color: var(--deco-black);
         }
     </style>
 </head>
@@ -161,15 +199,43 @@
     
     <canvas id="fireworks-canvas"></canvas>
 
+    <!-- 上传按钮 (解决本地图片无法显示的问题) -->
+    <div id="upload-btn-container">
+        <input type="file" id="bg-upload" accept="image/*" style="display: none;">
+        <button class="art-deco-btn" onclick="document.getElementById('bg-upload').click()">
+            更换背景 / Change BG
+        </button>
+    </div>
+
     <div class="content-overlay">
-        <div id="greeting" class="greeting-text w-full max-w-2xl px-4">
-            <div class="mb-6 flex justify-center">
-                <svg width="80" height="16" viewBox="0 0 100 20" class="md:w-[120px]">
-                    <path d="M0 10 L40 10 L50 0 L60 10 L100 10" stroke="#D4AF37" fill="none" stroke-width="2"/>
+        <div id="greeting" class="greeting-text w-full max-w-4xl px-4 flex flex-col items-center">
+            
+            <!-- 香港天际线 Art Deco 风格线条 -->
+            <div class="mb-8 w-full max-w-[300px] md:max-w-[500px]">
+                <svg viewBox="0 0 600 120" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto drop-shadow-lg">
+                    <!-- 线条定义: 抽象的香港地标 -->
+                    <path class="skyline-path" d="
+                        M 20 110 L 580 110 
+                        M 40 110 L 40 80 L 60 80 L 60 110 
+                        M 70 110 L 70 60 L 90 60 L 90 110
+                        M 120 110 L 120 40 L 140 30 L 160 40 L 160 110 
+                        M 140 30 L 140 110
+                        M 200 110 L 200 90 L 260 90 L 260 110
+                        M 210 90 L 210 80 L 250 80 L 250 90
+                        M 300 110 L 280 110 L 300 20 L 320 110 
+                        M 300 20 L 300 110
+                        M 290 80 L 310 80
+                        M 295 50 L 305 50
+                        M 340 110 L 340 50 L 370 50 L 370 110
+                        M 340 50 L 370 110 M 370 50 L 340 110
+                        M 400 110 L 400 70 L 430 70 L 430 110
+                        M 460 110 L 460 45 L 480 40 L 500 45 L 500 110
+                        M 530 110 L 530 85 L 560 85 L 560 110
+                    " stroke="#D4AF37" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
             
-            <div class="gold-gradient-text font-bold mb-4 md:mb-6 tracking-widest leading-relaxed">
+            <div class="gold-gradient-text font-bold mb-4 md:mb-6 tracking-widest leading-relaxed text-center">
                 <h1 class="text-2xl sm:text-3xl md:text-5xl">
                     Dr. Richard Niu <br class="sm:hidden"> 祝您及家人 <br> 2026年新年快樂！
                 </h1>
@@ -179,7 +245,7 @@
                 Dr. Richard Niu wishes you and your family <br> a Happy New Year 2026!
             </p>
 
-            <div class="mt-8 opacity-90 border-t border-gold-700/30 pt-6 inline-block w-full sm:w-auto">
+            <div class="mt-8 opacity-90 border-t border-gold-700/30 pt-6 inline-block w-full sm:w-auto text-center">
                 <p class="text-xs sm:text-sm md:text-base tracking-[0.3em] uppercase">
                     香港樹仁大學 <br>
                     <span class="text-[10px] sm:text-xs tracking-normal">Hong Kong Shue Yan University</span>
@@ -189,41 +255,49 @@
     </div>
 
     <script>
-        // ==========================================
-        // 设置图片文件名
-        // ==========================================
-        const customBackgroundUrl = "background.png"; 
-        
-        // 备用图片 (仅在本地 background.png 不存在或预览时显示)
+        const customBackgroundUrl = "./background.png"; 
         const fallbackImageUrl = "https://images.unsplash.com/photo-1510255502932-d128d5064c12?q=80&w=2074&auto=format&fit=crop";
         
         const bgImg = document.getElementById('bg-image');
         const greeting = document.getElementById('greeting');
         const canvas = document.getElementById('fireworks-canvas');
         const ctx = canvas.getContext('2d');
+        const fileInput = document.getElementById('bg-upload');
+
+        // 处理文件上传
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    bgImg.src = e.target.result;
+                    bgImg.style.opacity = "1";
+                    // 确保上传图片后文字依然可见（虽然默认已经是可见了）
+                    greeting.classList.add('visible');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 
         function initBackground() {
+            // 修改：不管图片是否加载，立刻显示文字
+            greeting.classList.add('visible');
+
             if (customBackgroundUrl) {
-                // 优先尝试加载本地图片
                 bgImg.src = customBackgroundUrl;
                 
                 bgImg.onload = () => {
                     bgImg.style.opacity = "1";
-                    greeting.classList.add('visible');
-                    console.log("成功加载本地图片: " + customBackgroundUrl);
+                    console.log("成功加载本地图片");
                 };
 
-                // 加载失败 (例如在预览窗口中找不到本地文件) 则使用备用图
                 bgImg.onerror = () => { 
-                    console.log("未找到本地图片，切换至演示背景");
+                    console.log("本地图片加载失败，切换至演示背景");
                     bgImg.src = fallbackImageUrl;
                     bgImg.onload = () => {
                         bgImg.style.opacity = "1";
-                        greeting.classList.add('visible');
                     }
                 };
-            } else {
-                greeting.classList.add('visible');
             }
         }
 
