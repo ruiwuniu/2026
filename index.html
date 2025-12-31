@@ -9,7 +9,6 @@
     <meta name="description" content="Dr. Richard Niu 祝您及家人2026年新年快樂！">
     <meta property="og:title" content="2026新年快樂 - Dr. Richard Niu">
     <meta property="og:description" content="Dr. Richard Niu 祝您及家人2026年新年快樂！">
-    <!-- 替换为你想在微信卡片上显示的预览图URL (建议 300x300px) -->
     <meta property="og:image" content="https://raw.githubusercontent.com/username/repo/main/thumbnail.jpg">
     <meta property="og:type" content="website">
 
@@ -71,15 +70,19 @@
         .bottom-left { bottom: -2px; left: -2px; border-right: none; border-top: none; }
         .bottom-right { bottom: -2px; right: -2px; border-left: none; border-top: none; }
 
+        /* 背景图设置 - 强制填充 */
         #bg-image {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover;
-            /* 调整：提高了亮度 (0.45 -> 0.7)，确保图片不会太暗 */
+            position: fixed; /* 使用 fixed 防止移动端滚动问题 */
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh;
+            object-fit: cover; /* 关键属性：保持比例填充，裁切多余部分 */
+            object-position: center;
+            /* 滤镜：亮度降低以突出金色文字，对比度微调 */
             filter: brightness(0.7) contrast(1.1) saturate(0.9);
             transition: opacity 2s ease-in-out;
             opacity: 0;
-            /* 调整：明确层级，确保在背景色之上，遮罩层之下 */
             z-index: 1;
         }
 
@@ -100,7 +103,7 @@
             text-align: center;
             color: var(--deco-light-gold);
             padding: 20px;
-            /* 调整：降低了遮罩的不透明度，让背景更透亮 (0.3 -> 0.1, 0.7 -> 0.5) */
+            /* 遮罩层：让文字更清晰 */
             background: radial-gradient(circle, rgba(0,51,34,0.1) 0%, rgba(5,5,5,0.5) 100%);
         }
 
@@ -144,7 +147,6 @@
         }
     </style>
 </head>
-<!-- 调整：去掉了默认的绿色背景，改用 CSS 中的黑色，方便排查是否加载失败 -->
 <body>
 
     <div class="deco-border">
@@ -154,7 +156,9 @@
         <div class="corner bottom-right"></div>
     </div>
 
-    <img id="bg-image" src="" alt="Background">
+    <!-- 背景图片 -->
+    <img id="bg-image" src="" alt="New Year Background">
+    
     <canvas id="fireworks-canvas"></canvas>
 
     <div class="content-overlay">
@@ -186,9 +190,12 @@
 
     <script>
         // ==========================================
-        // 图片链接
+        // 设置图片文件名
         // ==========================================
-        const customBackgroundUrl = "./background.png"; 
+        const customBackgroundUrl = "background.png"; 
+        
+        // 备用图片 (仅在本地 background.png 不存在或预览时显示)
+        const fallbackImageUrl = "https://images.unsplash.com/photo-1510255502932-d128d5064c12?q=80&w=2074&auto=format&fit=crop";
         
         const bgImg = document.getElementById('bg-image');
         const greeting = document.getElementById('greeting');
@@ -197,16 +204,23 @@
 
         function initBackground() {
             if (customBackgroundUrl) {
+                // 优先尝试加载本地图片
                 bgImg.src = customBackgroundUrl;
+                
                 bgImg.onload = () => {
                     bgImg.style.opacity = "1";
                     greeting.classList.add('visible');
-                    console.log("图片加载成功！");
+                    console.log("成功加载本地图片: " + customBackgroundUrl);
                 };
+
+                // 加载失败 (例如在预览窗口中找不到本地文件) 则使用备用图
                 bgImg.onerror = () => { 
-                    console.error("图片加载失败！请检查文件名是否为 background.png (注意大小写) 且在同一目录下。");
-                    // 即使失败也显示文字，避免空白
-                    greeting.classList.add('visible'); 
+                    console.log("未找到本地图片，切换至演示背景");
+                    bgImg.src = fallbackImageUrl;
+                    bgImg.onload = () => {
+                        bgImg.style.opacity = "1";
+                        greeting.classList.add('visible');
+                    }
                 };
             } else {
                 greeting.classList.add('visible');
