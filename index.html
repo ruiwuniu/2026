@@ -30,6 +30,7 @@
             overflow: hidden;
             background-color: var(--deco-black);
             font-family: 'Cinzel', 'Noto Serif TC', serif;
+            cursor: pointer; /* 提示可点击 */
         }
 
         /* --- 复杂的 Art Deco 边框设计 --- */
@@ -144,12 +145,14 @@
             padding: 20px;
             /* 额外的暗色遮罩，确保文字清晰 */
             background: radial-gradient(circle, rgba(0,51,34,0.2) 0%, rgba(0,0,0,0.4) 100%);
+            pointer-events: none; /* 让点击穿透遮罩层到 canvas */
         }
 
         .greeting-text {
             opacity: 0;
             transform: translateY(15px);
             transition: all 1.2s ease-out 0.1s;
+            pointer-events: auto; /* 文字本身可交互(复制等) */
         }
 
         .visible {
@@ -202,6 +205,7 @@
             z-index: 100;
             opacity: 0.7;
             transition: opacity 0.3s;
+            pointer-events: auto;
         }
         #upload-btn-container:hover { opacity: 1; }
         .art-deco-btn {
@@ -272,7 +276,6 @@
                 <svg viewBox="0 0 600 130" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto drop-shadow-lg">
                     <!-- 
                        香港维港天际线 (镜像翻转 + 高密度填充)
-                       调整：大幅增加 IFC (x=150~175) 的高度，从 y=25 提升至 y=5
                     -->
                     <path class="skyline-path" transform="translate(600, 0) scale(-1, 1)" d="M 0 125 L 600 125 M 10 125 L 10 35 L 35 35 L 35 125 M 22 35 L 22 125 M 40 125 L 40 55 L 50 55 L 50 125 M 55 125 L 55 60 L 65 60 L 65 125 M 75 125 L 75 70 L 90 70 L 90 125 M 95 125 L 95 50 L 110 40 L 125 50 L 125 125 M 110 40 L 110 30 M 130 125 L 130 80 L 145 80 L 145 125 M 150 125 L 150 5 L 175 5 L 175 125 M 150 15 L 175 15 M 180 125 L 180 70 L 195 70 L 195 125 M 200 125 L 200 65 L 225 65 L 225 125 M 230 125 L 230 60 L 245 60 L 245 125 M 250 125 L 250 55 L 265 55 L 265 125 M 270 125 L 270 50 L 290 10 L 310 50 L 310 125 M 270 50 L 310 50 M 290 10 L 290 125 M 315 125 L 315 75 L 330 75 L 330 125 M 335 125 L 335 80 L 350 80 L 350 125 M 355 125 L 355 50 L 375 20 L 395 50 L 395 125 M 375 20 L 375 10 M 400 125 L 400 60 L 420 60 L 420 125 M 425 125 L 425 100 Q 450 90 475 100 L 475 125 M 480 125 L 480 50 L 500 40 L 520 50 L 520 125 M 525 125 L 525 70 L 540 70 L 540 125 M 545 125 L 545 60 L 560 60 L 560 125 M 565 125 L 565 75 L 580 75 L 580 125 M 585 125 L 585 80 L 595 80 L 595 125" stroke="#D4AF37" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -283,6 +286,11 @@
                     香港樹仁大學 <br>
                     <span class="text-[10px] sm:text-xs tracking-normal">Hong Kong Shue Yan University</span>
                 </p>
+            </div>
+
+            <!-- 点击提示文字 -->
+            <div class="mt-8 text-[10px] md:text-xs text-[#D4AF37] opacity-60 tracking-widest uppercase animate-pulse">
+                ✨ 点击屏幕燃放烟花 | Tap Screen for Fireworks ✨
             </div>
         </div>
     </div>
@@ -334,25 +342,22 @@
         window.addEventListener('resize', resize);
         resize();
 
+        // 烟花粒子类
         class Particle {
-            constructor(x, y, color) {
+            constructor(x, y, color, velocity) {
                 this.x = x; 
                 this.y = y; 
                 this.color = color;
-                const speedScale = window.innerWidth < 768 ? 5 : 8; // 降低初始速度
-                this.velocity = { 
-                    x: (Math.random() - 0.5) * speedScale, 
-                    y: (Math.random() - 0.5) * speedScale 
-                };
+                this.velocity = velocity;
                 this.alpha = 1; 
-                this.friction = 0.96; 
-                this.gravity = 0.05; // 降低重力 (原 0.12)
+                this.friction = 0.95; 
+                this.gravity = 0.05;
             }
             draw() {
                 ctx.save(); ctx.globalAlpha = this.alpha; ctx.beginPath();
-                ctx.arc(this.x, this.y, window.innerWidth < 768 ? 1 : 1.5, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
-                ctx.shadowBlur = window.innerWidth < 768 ? 5 : 12; ctx.shadowColor = this.color;
+                ctx.shadowBlur = 10; ctx.shadowColor = this.color;
                 ctx.fill(); ctx.restore();
             }
             update() {
@@ -361,27 +366,125 @@
                 this.velocity.y += this.gravity; 
                 this.x += this.velocity.x; 
                 this.y += this.velocity.y;
-                this.alpha -= 0.006; // 降低消失速度 (原 0.01)
+                this.alpha -= 0.01;
             }
         }
 
         let particles = [];
         const goldColors = ['#D4AF37', '#F4DFAD', '#FFD700', '#B8860B'];
+        const colorfulColors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#FFFFFF'];
 
-        function createFirework(x, y) {
-            // 增加粒子数量
-            const count = window.innerWidth < 768 ? 80 : 120; // 原 50:80
+        // 自动烟花 (金色, 随机圆形)
+        function createAutoFirework(x, y) {
+            const count = 50; 
             const color = goldColors[Math.floor(Math.random() * goldColors.length)];
-            for (let i = 0; i < count; i++) { particles.push(new Particle(x, y, color)); }
+            for (let i = 0; i < count; i++) { 
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = {
+                    x: Math.cos(angle) * (Math.random() * 6),
+                    y: Math.sin(angle) * (Math.random() * 6)
+                };
+                particles.push(new Particle(x, y, color, velocity)); 
+            }
         }
+
+        // 点击产生的形状烟花 (彩色)
+        function createShapeFirework(x, y) {
+            const shapes = ['heart', 'smile', 'star', 'jupiter'];
+            const type = shapes[Math.floor(Math.random() * shapes.length)];
+            const color = colorfulColors[Math.floor(Math.random() * colorfulColors.length)];
+            let points = [];
+
+            // 生成形状坐标点 (归一化 -1 到 1)
+            switch(type) {
+                case 'heart':
+                    for (let i = 0; i < 50; i++) {
+                        const t = (Math.PI * 2 * i) / 50;
+                        const px = 16 * Math.pow(Math.sin(t), 3);
+                        const py = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                        points.push({x: px / 16, y: py / 16});
+                    }
+                    break;
+                case 'star':
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                        points.push({x: Math.cos(angle), y: Math.sin(angle)});
+                        // 内点
+                        const innerAngle = angle + Math.PI / 5;
+                        points.push({x: Math.cos(innerAngle) * 0.5, y: Math.sin(innerAngle) * 0.5});
+                    }
+                    // 插值连线
+                    let starPoints = [];
+                    for(let i=0; i<points.length; i++) {
+                        starPoints.push(points[i]);
+                        let next = points[(i+1)%points.length];
+                        for(let j=1; j<5; j++) { // 连线插值点
+                            starPoints.push({
+                                x: points[i].x + (next.x - points[i].x) * (j/5),
+                                y: points[i].y + (next.y - points[i].y) * (j/5)
+                            });
+                        }
+                    }
+                    points = starPoints;
+                    break;
+                case 'smile':
+                    // 脸圆圈
+                    for (let i = 0; i < 30; i++) {
+                        const t = (Math.PI * 2 * i) / 30;
+                        points.push({x: Math.cos(t), y: Math.sin(t)});
+                    }
+                    // 眼睛
+                    points.push({x: -0.4, y: -0.4});
+                    points.push({x: 0.4, y: -0.4});
+                    // 嘴巴
+                    for (let i = 0; i < 20; i++) {
+                        const t = 0.2 * Math.PI + (0.6 * Math.PI * i) / 20;
+                        points.push({x: Math.cos(t) * 0.7, y: Math.sin(t) * 0.7}); // 下半弧
+                    }
+                    break;
+                case 'jupiter':
+                    // 行星本体
+                    for (let i = 0; i < 40; i++) { // 填充圆
+                        const angle = Math.random() * Math.PI * 2;
+                        const r = Math.sqrt(Math.random());
+                        points.push({x: r * Math.cos(angle), y: r * Math.sin(angle)});
+                    }
+                    // 环
+                    for (let i = 0; i < 30; i++) {
+                        const t = (Math.PI * 2 * i) / 30;
+                        points.push({x: Math.cos(t) * 1.5, y: Math.sin(t) * 0.3}); // 椭圆环
+                    }
+                    break;
+            }
+
+            // 创建粒子
+            const speed = 8;
+            points.forEach(p => {
+                const velocity = {
+                    x: p.x * speed + (Math.random() - 0.5), // 加一点随机扰动
+                    y: p.y * speed + (Math.random() - 0.5)
+                };
+                // 彩色烟花：每个粒子颜色稍微不同，或者同色
+                particles.push(new Particle(x, y, color, velocity));
+            });
+        }
+
+        // 监听点击事件
+        window.addEventListener('click', (e) => {
+            // 防止点击按钮时触发（虽然按钮阻止了冒泡，但多一层保险）
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') {
+                createShapeFirework(e.clientX, e.clientY);
+            }
+        });
 
         function animate() {
             ctx.fillStyle = 'rgba(5, 5, 5, 0.2)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             particles.forEach((p, i) => { if (p.alpha > 0) { p.update(); p.draw(); } else { particles.splice(i, 1); } });
-            // 增加爆炸频率
-            if (Math.random() < 0.08) { // 原 0.03
-                createFirework(Math.random() * canvas.width, Math.random() * (canvas.height * 0.6)); 
+            
+            // 自动背景烟花 (保持金色)
+            if (Math.random() < 0.05) { 
+                createAutoFirework(Math.random() * canvas.width, Math.random() * (canvas.height * 0.6)); 
             }
             requestAnimationFrame(animate);
         }
