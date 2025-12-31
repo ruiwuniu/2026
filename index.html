@@ -187,7 +187,7 @@
         const ctx = canvas.getContext('2d');
 
         function initBackground() {
-            if (customBackgroundUrl && !customBackgroundUrl.includes("your-image.jpg")) {
+            if (customBackgroundUrl && !customBackgroundUrl.includes("background.png")) {
                 bgImg.src = customBackgroundUrl;
                 bgImg.onload = () => {
                     bgImg.style.opacity = "1";
