@@ -179,7 +179,12 @@
     </div>
 
     <script>
-        const customBackgroundUrl = "https://github.com/ruiwuniu/2026/blob/main/background.png"; 
+        // ==========================================
+        // 修改说明：
+        // 已将图片链接改为 "./background.png"
+        // 这代表引用当前目录下的 background.png 文件
+        // ==========================================
+        const customBackgroundUrl = "./background.png"; 
         
         const bgImg = document.getElementById('bg-image');
         const greeting = document.getElementById('greeting');
@@ -187,13 +192,18 @@
         const ctx = canvas.getContext('2d');
 
         function initBackground() {
-            if (customBackgroundUrl && !customBackgroundUrl.includes("background.png")) {
+            // 这里去掉了原本的占位符检查逻辑，直接加载链接
+            if (customBackgroundUrl) {
                 bgImg.src = customBackgroundUrl;
                 bgImg.onload = () => {
                     bgImg.style.opacity = "1";
                     greeting.classList.add('visible');
                 };
-                bgImg.onerror = () => { greeting.classList.add('visible'); };
+                // 如果图片加载失败，也会显示文字
+                bgImg.onerror = () => { 
+                    console.error("背景加载失败，请检查链接");
+                    greeting.classList.add('visible'); 
+                };
             } else {
                 greeting.classList.add('visible');
             }
